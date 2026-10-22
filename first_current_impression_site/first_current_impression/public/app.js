@@ -30,7 +30,21 @@ async function setTarget(id){try{await api("/api/admin/target",{targetId:id});ms
 $("entryForm").addEventListener("submit",async e=>{e.preventDefault();if(!state?.target)return;const btn=e.submitter;btn.disabled=true;msg("formMsg","제출 중...");
  try{const r=await fetch("/api/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({participantName:$("participantName").value,first:$("first").value,current:$("current").value,targetId:state.target.id})});const d=await r.json();if(!r.ok)throw new Error(d.error||"제출 실패");$("entryForm").reset();msg("formMsg","제출 완료! 글은 익명으로 저장됐어요.");}catch(err){msg("formMsg",err.message)}finally{btn.disabled=false}
 });
-$("hostToggle").onclick=()=>{if(token){show("hostLoginPanel",false);show("hostConsole",!$("hostConsole").classList.contains("hidden")?false:true);if(!$("hostConsole").classList.contains("hidden"))updatePublic();return}show("hostLoginPanel",$("hostLoginPanel").classList.contains("hidden"))};
+$("hostToggle").onclick = () => {
+  if (token) {
+    show("hostLoginPanel", false);
+
+    const isHidden = $("hostConsole").classList.contains("hidden");
+    show("hostConsole", isHidden);
+
+    if (isHidden) updatePublic();
+    return;
+  }
+
+  const panel = $("hostLoginPanel");
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+};
 $("loginForm").onsubmit=async e=>{e.preventDefault();try{const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("password").value})});const d=await r.json();if(!r.ok)throw new Error(d.error);token=d.token;localStorage.setItem("fic_admin_token",token);show("hostLoginPanel",false);show("hostConsole",true);msg("loginMsg","");await updatePublic()}catch(err){msg("loginMsg",err.message)}};
 $("saveParticipants").onclick=async()=>{try{const names=$("names").value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);await api("/api/admin/participants",{names});msg("participantMsg",`${names.length}명 등록 완료.`);await updatePublic()}catch(e){msg("participantMsg",e.message)}};
 $("pickRandom").onclick=()=>{if(!state?.participants?.length)return msg("targetMsg","참가자를 먼저 등록하세요.");const opts=state.participants.filter(p=>p.id!==state.target?.id);if(!opts.length)return msg("targetMsg","참가자가 두 명 이상 필요합니다.");setTarget(opts[Math.floor(Math.random()*opts.length)].id)};
