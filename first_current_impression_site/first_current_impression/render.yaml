@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: first-current-impression
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: ADMIN_PASSWORD
+        generateValue: true
